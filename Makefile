@@ -2,7 +2,7 @@ build:
 	docker-compose build
 up:
 	docker-compose up -d
-	sleep 3
-	docker logs app-cnt
+	sleep 1
+	docker logs scrip-api
 down:
 	docker-compose down
