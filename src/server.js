@@ -1,19 +1,14 @@
 const path = require("path")
-const moment = require('moment')
 
 const http = require('http')
 const express = require('express')
 const app = express()
 
+const fetch = require('node-fetch')
+
+
 // Access Origin
 app.use(function(req, res, next) {
-
-    // const allowedOrigins = ['http://localhost:4200', 'http://192.168.178.40:4200'];
-    // const origin = req.headers.origin;
-    // if (allowedOrigins.includes(origin)) {
-    //     res.setHeader('Access-Control-Allow-Origin', origin);
-    // }
-    // res.header("Access-Control-Allow-Origin", "http://localhost:4200", "http://192.168.178.40:4200")
     res.setHeader("Access-Control-Allow-Origin", '*')
     res.setHeader("Access-Control-Allow-Methods", "PUT, GET, POST, DELETE, OPTIONS")    
     res.setHeader("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin, Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers")
@@ -46,45 +41,30 @@ app.get("/", async (req, res) => {
 })
 
 // Return some data
-app.get("/someData", async (req, res) => {
-    res.setHeader('Content-Type', 'application/json')
+app.get("/sh/:user", async (req, res) => {
+
+    let user = req.params.user
+    user = user.replace(/[^a-z0-9]/gi,'') // Only alphanumeric string
+
+    if (!user) {
+        res.setHeader('Content-Type', 'text/html')
+        res.status(500).send("No GitHub User")
+
+    } else {
+
+        console.log("Keys for GitHub User :", user)
+
+        res.setHeader('Content-Type', 'application/x-sh')
     
-    let dummyFoodStores = [ 
-            { 
-                id: 1,
-                foodStore: "Casino",
-                location: {
-                    lon: "123.123",
-                    lat: "456.456"
-                },
-                favorite: true,
-                lastVisite: "2022-30-03"     
-            },
-            { 
-                id: 2,
-                foodStore: "Dori, Dori",
-                location: {
-                    lon: "123.123",
-                    lat: "456.456"
-                },
-                favorite: true,
-                lastVisite: "2022-29-03"     
-            },
-            { 
-                id: 3,
-                foodStore: "Chipo",
-                location: {
-                    lon: "123.123",
-                    lat: "456.456"
-                },
-                favorite: false,
-                lastVisite: "2022-28-03"     
-            },
-        ]
+        const sh_script_url = ' https://raw.githubusercontent.com/kori2000/shell-script-helper/main/getkeys.sh'
+    
+        let response = await fetch(sh_script_url)
+        let body = await response.text()
+        let modded_script = body.replace("kori2000", user)
+    
+        res.status(200).send(modded_script)
 
-    console.log("RESULT BACK TO..:", req.headers.host);
-
-    res.status(200).send(JSON.stringify(dummyFoodStores))
+    }
 })
 
 /**
